@@ -1,0 +1,46 @@
+# 工作流名称，自定义即可
+name: 每天8点50执行Python脚本
+
+# 触发规则：定时触发 + 可选手动触发（方便测试）
+on:
+  # 定时触发（cron 语法，注意时区是 UTC！）
+  schedule:
+    # UTC 时间 0:50 = 北京时间 8:50（UTC+8）
+    - cron: '50 0 * * *'
+  # 手动触发（在 GitHub 仓库 Actions 页面可点击运行）
+  workflow_dispatch:
+
+# 执行的任务
+jobs:
+  run-python-script:
+    # 选择运行环境（推荐 Ubuntu，轻量且稳定）
+    runs-on: ubuntu-latest
+    
+    # 任务步骤
+    steps:
+      # 步骤1：拉取当前仓库代码到虚拟环境
+      - name: 拉取仓库代码
+        uses: actions/checkout@v4
+
+      # 步骤2：设置 Python3 环境
+      - name: 配置Python3
+        uses: actions/setup-python@v5
+        with:
+          # 指定Python版本，比如3.10（可根据你的脚本调整）
+          python-version: '3.10'
+
+      # 步骤3：安装脚本依赖（如果有）
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          # 如果你的脚本有依赖（比如requests、pandas），写在这里
+          pip install requests requests
+
+      # 步骤4：执行Python脚本
+      - name: 运行.py文件
+        # 替换为你的脚本路径（仓库内的相对路径）
+        run: python3 ./xb.py
+
+      # 可选步骤：输出脚本执行日志（方便排查问题）
+      - name: 打印执行结果
+        run: echo "Python脚本已在 $(date) 执行完成"
