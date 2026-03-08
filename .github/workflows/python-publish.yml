@@ -2,8 +2,8 @@ name: 定时随机执行多Python脚本
 
 on:
   schedule:
-    # 上午任务触发：UTC 0:50 = 北京时间 8:50
-    - cron: '50 0 * * *'
+    # 上午任务触发：UTC 0:40 = 北京时间 8:40
+    - cron: '40 0 * * *'
     # 下午任务触发：UTC 10:30 = 北京时间 18:30
     - cron: '30 10 * * *'
   # 手动触发（方便测试）
@@ -33,26 +33,26 @@ jobs:
           TRIGGER_CRON="${{ github.event.schedule }}"
           echo "当前触发定时规则：$TRIGGER_CRON"
 
-          # 上午分支：8:50触发 → 随机延时后执行sb.py、sb1.py
-          if [ "$TRIGGER_CRON" = "50 0 * * *" ]; then
+          # 上午分支：8:40触发 → 随机延时后执行sb.py、sb1.py（间隔1分钟）
+          if [ "$TRIGGER_CRON" = "40 0 * * *" ]; then
             echo "===== 开始上午任务：随机延时（0~600秒）====="
-            # 生成0-600秒随机数（8:50~9:00窗口）
-            RANDOM_SECONDS=$(python3 -c "import random; print(random.randint(0, 200))")
-            echo "随机延时时长：$RANDOM_SECONDS 秒"
-            sleep $RANDOM_SECONDS
+            # 生成0-1200秒随机数（8:40~9:00窗口，共20分钟=1200秒）
+            TOTAL_RANDOM_SECONDS=$(python3 -c "import random; print(random.randint(0, 600))")
+            echo "总随机延时时长：$TOTAL_RANDOM_SECONDS 秒"
+            sleep $TOTAL_RANDOM_SECONDS
 
             echo "===== 开始执行sb.py ====="
-            # 执行sb.py，捕获执行状态（失败则终止任务）
             if python3 ./sb.py; then
               echo "sb.py执行成功！"
             else
               echo "sb.py执行失败，终止任务！"
-              exit 1 # 非0退出码标记任务失败
+              exit 1
             fi
-            # 生成0-200秒随机数（8:50~9:00窗口）
-            RANDOM_SECONDS=$(python3 -c "import random; print(random.randint(0, 200))")
-            echo "随机延时时长：$RANDOM_SECONDS 秒"
-            sleep $RANDOM_SECONDS
+
+            # 间隔1分钟（60秒）
+            echo "===== 间隔1分钟，准备执行sb1.py ====="
+            sleep 60
+
             echo "===== 开始执行sb1.py ====="
             if python3 ./sb1.py; then
               echo "sb1.py执行成功！"
@@ -61,13 +61,10 @@ jobs:
               exit 1
             fi
 
-          # 下午分支：18:30触发 → 执行xb.py、xb1.py
+          # 下午分支：18:30触发 → 执行xb.py、xb1.py（间隔1分钟，无随机延时）
           elif [ "$TRIGGER_CRON" = "30 10 * * *" ]; then
             echo "===== 开始下午任务 ====="
-            # 生成0-200秒随机数（8:50~9:00窗口）
-            RANDOM_SECONDS=$(python3 -c "import random; print(random.randint(0, 200))")
-            echo "随机延时时长：$RANDOM_SECONDS 秒"
-            sleep $RANDOM_SECONDS
+            
             echo "===== 开始执行xb.py ====="
             if python3 ./xb.py; then
               echo "xb.py执行成功！"
@@ -75,10 +72,11 @@ jobs:
               echo "xb.py执行失败，终止任务！"
               exit 1
             fi
-            # 生成0-200秒随机数（8:50~9:00窗口）
-            RANDOM_SECONDS=$(python3 -c "import random; print(random.randint(0, 200))")
-            echo "随机延时时长：$RANDOM_SECONDS 秒"
-            sleep $RANDOM_SECONDS
+
+            # 间隔1分钟（60秒）
+            echo "===== 间隔1分钟，准备执行xb1.py ====="
+            sleep 60
+
             echo "===== 开始执行xb1.py ====="
             if python3 ./xb1.py; then
               echo "xb1.py执行成功！"
