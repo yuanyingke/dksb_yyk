@@ -36,7 +36,7 @@ jobs:
           # 上午分支：8:40触发 → 随机延时后执行sb.py、sb1.py（间隔1分钟）
           if [ "$TRIGGER_CRON" = "40 0 * * *" ]; then
             echo "===== 开始上午任务：随机延时（0~600秒）====="
-            # 生成0-1200秒随机数（8:40~9:00窗口，共20分钟=1200秒）
+            # 生成0-600秒随机数（8:40~9:00窗口，共20分钟=1200秒）
             TOTAL_RANDOM_SECONDS=$(python3 -c "import random; print(random.randint(0, 600))")
             echo "总随机延时时长：$TOTAL_RANDOM_SECONDS 秒"
             sleep $TOTAL_RANDOM_SECONDS
